@@ -1,0 +1,70 @@
+---
+title: "CP1 - ToothGrowth"
+author: "Petar Luketic"
+date: "Sunday, June 21, 2015"
+output:
+  pdf_document: default
+  html_document:
+    theme: journal
+---
+
+# Tooth Growth 
+  
+## 1. Load the ToothGrowth data and perform some basic exploratory data analysis     
+  
+```{r explore, echo=TRUE}
+# load the dataset
+library(datasets)
+data(ToothGrowth)
+
+# look at the dataset variables
+head(ToothGrowth)
+str(ToothGrowth)
+
+# convert variable dose from numeric to factor
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+
+# review dataset variables after conversion
+str(ToothGrowth)
+
+# number of rows of dataset
+nrow(ToothGrowth)
+```  
+  
+## 2. Provide a high level summary of the data.  
+  
+```{r Summary, echo=TRUE}  
+# summary statistics for all variables
+summary(ToothGrowth)
+
+# split cases on different dose levels and delivery methods
+table(ToothGrowth$dose, ToothGrowth$supp)
+
+library(ggplot2)
+ggplot(data=ToothGrowth, aes(x=as.factor(dose), y=len, fill=supp)) +
+    geom_bar(stat="identity",) +
+    facet_grid(. ~ supp) +
+    xlab("Dose in miligrams") +
+    ylab("Tooth length") +
+    guides(fill=guide_legend(title="Supplement type"))
+```  
+  
+For both delivery methods, there is positive correlation between the tooth length and the dose levels of Vitamin C.    
+  
+## 3. Use confidence intervals and hypothesis tests to compare tooth growth by supp and dose.  
+  
+95% confidence intervals for two variables and the intercept are as follows:  
+
+```{r ci, echo=TRUE}
+fit <- lm(len ~ dose + supp, data=ToothGrowth)
+confint(fit)
+```  
+  
+The confidence intervals suggest that 95% of the time, the coefficient estimations will be in these ranges. For each coefficient (i.e. intercept, `dose` and `suppVC`), the null hypothesis should be that the coefficients are zero which means that no tooth length variation is explained by that variable. 
+  
+ 
+```{r}
+summary(fit)
+```  
+  
+The model explains 70% of the data variance. The intercept is `r fit$coefficients[[1]]`, so without Vitamin C, the average tooth length is `r fit$coefficients[[1]]`. The coefficient of `dose` is `r fit$coefficients[[2]]`. It can be interpreted as increasing the delievered dose 1 mg, all else equal increases the tooth length `r fit$coefficients[[2]]`. 
